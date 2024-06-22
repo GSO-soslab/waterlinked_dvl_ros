@@ -32,6 +32,8 @@ WaterlinkedDvlTcp::WaterlinkedDvlTcp() :
 
     m_twist_publisher = m_nh.advertise<geometry_msgs::TwistWithCovarianceStamped>("dvl/twist", 1000);
 
+    m_raw_twist_publisher = m_nh.advertise<geometry_msgs::TwistWithCovarianceStamped>("dvl/raw_twist", 1000);
+
     m_pose_publisher = m_nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("dvl/pose", 1000);
 
     m_transducer_report_publisher = m_nh.advertise<waterlinked_dvl::TransducerReportStamped>("dvl/transducer_report", 1000);
@@ -190,6 +192,18 @@ void WaterlinkedDvlTcp::f_parse_json_v2(Json::Value root) {
                 }
                 m_twist_publisher.publish(twist_msg);
             }
+            //Raw Twist
+            geometry_msgs::TwistWithCovarianceStamped twist_msg;
+            twist_msg.header = msg.header;
+            twist_msg.twist.twist.linear.x = msg.report.vx;
+            twist_msg.twist.twist.linear.y = msg.report.vy;
+            twist_msg.twist.twist.linear.z = msg.report.vz;
+
+            if (m_velocity_covariance.size() == twist_msg.twist.covariance.size()) {
+                twist_msg.twist.covariance = as_array<twist_msg.twist.covariance.size()>(m_velocity_covariance);
+            }
+            m_raw_twist_publisher.publish(twist_msg);
+
         } else if (type == "position_local") {
             waterlinked_dvl::PositionReportStamped msg;
             msg.header.stamp = now;
@@ -303,6 +317,17 @@ void WaterlinkedDvlTcp::f_parse_json_v3(Json::Value root)
                 }
                 m_twist_publisher.publish(twist_msg);
             }
+            //Raw Twist
+            geometry_msgs::TwistWithCovarianceStamped twist_msg;
+            twist_msg.header = msg.header;
+            twist_msg.twist.twist.linear.x = msg.report.vx;
+            twist_msg.twist.twist.linear.y = msg.report.vy;
+            twist_msg.twist.twist.linear.z = msg.report.vz;
+
+            if (m_velocity_covariance.size() == twist_msg.twist.covariance.size()) {
+                twist_msg.twist.covariance = as_array<twist_msg.twist.covariance.size()>(m_velocity_covariance);
+            }
+            m_raw_twist_publisher.publish(twist_msg);
         }
         else if (type == "position_local")
         {
