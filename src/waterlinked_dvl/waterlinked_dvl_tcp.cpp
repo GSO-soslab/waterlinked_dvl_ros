@@ -192,17 +192,6 @@ void WaterlinkedDvlTcp::f_parse_json_v2(Json::Value root) {
                 }
                 m_twist_publisher.publish(twist_msg);
             }
-            //Raw Twist
-            geometry_msgs::TwistWithCovarianceStamped twist_msg;
-            twist_msg.header = msg.header;
-            twist_msg.twist.twist.linear.x = msg.report.vx;
-            twist_msg.twist.twist.linear.y = msg.report.vy;
-            twist_msg.twist.twist.linear.z = msg.report.vz;
-
-            if (m_velocity_covariance.size() == twist_msg.twist.covariance.size()) {
-                twist_msg.twist.covariance = as_array<twist_msg.twist.covariance.size()>(m_velocity_covariance);
-            }
-            m_raw_twist_publisher.publish(twist_msg);
 
         } else if (type == "position_local") {
             waterlinked_dvl::PositionReportStamped msg;
@@ -305,6 +294,25 @@ void WaterlinkedDvlTcp::f_parse_json_v3(Json::Value root)
 
             m_transducer_report_publisher.publish(msg);
 
+            //Raw Twist
+            geometry_msgs::TwistWithCovarianceStamped twist_msg;
+            twist_msg.header = msg.header;
+            twist_msg.twist.twist.linear.x = msg.report.vx;
+            twist_msg.twist.twist.linear.y = msg.report.vy;
+            twist_msg.twist.twist.linear.z = msg.report.vz;
+
+            twist_msg.twist.covariance[18] = msg.report.covariance[0];
+            twist_msg.twist.covariance[19] = msg.report.covariance[1];
+            twist_msg.twist.covariance[20] = msg.report.covariance[2];
+            twist_msg.twist.covariance[24] = msg.report.covariance[3];
+            twist_msg.twist.covariance[25] = msg.report.covariance[4];
+            twist_msg.twist.covariance[26] = msg.report.covariance[5];
+            twist_msg.twist.covariance[30] = msg.report.covariance[6];
+            twist_msg.twist.covariance[31] = msg.report.covariance[7];
+            twist_msg.twist.covariance[32] = msg.report.covariance[8];
+
+            m_raw_twist_publisher.publish(twist_msg);
+
             if(msg.report.velocity_valid) {
                 geometry_msgs::TwistWithCovarianceStamped twist_msg;
                 twist_msg.header = msg.header;
@@ -317,17 +325,6 @@ void WaterlinkedDvlTcp::f_parse_json_v3(Json::Value root)
                 }
                 m_twist_publisher.publish(twist_msg);
             }
-            //Raw Twist
-            geometry_msgs::TwistWithCovarianceStamped twist_msg;
-            twist_msg.header = msg.header;
-            twist_msg.twist.twist.linear.x = msg.report.vx;
-            twist_msg.twist.twist.linear.y = msg.report.vy;
-            twist_msg.twist.twist.linear.z = msg.report.vz;
-
-            if (m_velocity_covariance.size() == twist_msg.twist.covariance.size()) {
-                twist_msg.twist.covariance = as_array<twist_msg.twist.covariance.size()>(m_velocity_covariance);
-            }
-            m_raw_twist_publisher.publish(twist_msg);
         }
         else if (type == "position_local")
         {
